@@ -129,9 +129,13 @@ class ModelSerializer(Serializer):
         field = self.opts.model._meta.get_field(key)
         field_type = field.__class__.__name__
         deserializer = get_deserializer(field_type)
+
         if deserializer:
             deserializer(self.instance, key, val)
         else:
+            if hasattr(field.rel, 'to') and hasattr(self.instance, '%s_id' % key):
+                key = '%s_id' % key
+
             setattr(self.instance, key, val)
 
     def _deserialize_related(self, key, val, save_instance=False):
