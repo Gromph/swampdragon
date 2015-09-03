@@ -1,3 +1,4 @@
+from django.db.models import ForeignKey
 from .pubsub_providers.base_provider import PUBACTIONS
 from .model_tools import get_property
 from .pubsub_providers.model_publisher import publish_model
@@ -23,7 +24,6 @@ class SelfPublishModel(object):
         so it's possible to determine what fields have changed.
         """
         relevant_fields = self._get_relevant_fields()
-
         for field in relevant_fields:
             val = get_property(self, field)
             if hasattr(self._serializer, field):
@@ -39,15 +39,31 @@ class SelfPublishModel(object):
         This is used to save the state of the model before it's updated,
         to be able to get changes used when publishing an update (so not all fields are published)
         """
-        # update_fields = list(self._serializer.opts.update_fields)
-        # publish_fields = list(self._serializer.opts.publish_fields)
-        # relevant_fields = set(update_fields + publish_fields)
         relevant_fields = self._serializer.base_fields
 
         if 'id' in relevant_fields:
             relevant_fields.remove('id')
 
-        return relevant_fields
+        relevant_fields_copy = []
+
+        # check for any foreign keys and include the key to the object instead of the object itself
+        # This is to avoid triggering queries to retrieve the foreign object
+        for field in self._meta.fields:
+            if field.name in relevant_fields:
+                if type(field) in (ForeignKey, ):
+                    # typically field.attname is field.name + "_id" ie field_id
+                    relevant_fields_copy.append(field.attname)
+                else:
+                    relevant_fields_copy.append(field.name)
+
+        return relevant_fields_copy
+
+        # for field_name in relevant_fields:
+        #     field = self._meta.get_field_by_name(field_name)[0]
+        #     if isinstance(field, ForeignKey):
+        #         relevant_fields.remove(field_name)
+        #
+        # return relevant_fields
 
     def get_changed_fields(self):
         changed_fields = []
@@ -72,6 +88,10 @@ class SelfPublishModel(object):
             self.changed_fields = self.get_changed_fields()
         super(SelfPublishModel, self).save(*args, **kwargs)
         self._publish(self.action, self.changed_fields)
+
+        # Set the pre-save state to the current state
+        # in case the model is changed again before retrieval
+        self._set_pre_save_state()
 
 
 @receiver(m2m_changed)
