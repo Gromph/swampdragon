@@ -352,6 +352,9 @@ swampdragon.callRouter = function (verb, route, args, success, failure, channel)
         if (context.state == 'error') {
             if (failure) { failure(context, data)}
         }
+        if (context.state == 'login_required') {
+            if (failure) { failure(context, ['login_required'])}
+        }        
     });
 
     swampdragon.sendJSON({
