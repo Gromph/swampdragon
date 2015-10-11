@@ -1,5 +1,5 @@
 from django.core.exceptions import ValidationError
-from django.db.models.fields.related import ForwardManyToOneDescriptor, ForeignRelatedObjectsDescriptor, \
+from django.db.models.fields.related import ForwardManyToOneDescriptor, ReverseManyToOneDescriptor, \
     ReverseManyRelatedObjectsDescriptor, ManyRelatedObjectsDescriptor
 from swampdragon.model_tools import get_property, get_model
 from swampdragon.serializers.field_serializers import serialize_field
@@ -210,7 +210,7 @@ class ModelSerializer(Serializer):
                 if rel:
                     val = rel.pk
             # FK
-            elif isinstance(field_type, ForeignRelatedObjectsDescriptor):
+            elif isinstance(field_type, ReverseManyToOneDescriptor):
                 val = list(get_property(self.instance, attr_name).all().values_list('pk', flat=True))
             elif isinstance(field_type, ReverseManyRelatedObjectsDescriptor):
                 val = list(get_property(self.instance, attr_name).all().values_list('pk', flat=True))
