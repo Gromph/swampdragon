@@ -16,7 +16,7 @@ def _add_swampdragon_to_installed_apps(settings):
         raise Exception('no installed apps found')
 
     for i in range(installed_apps_start, len(settings)):
-        if ')' in settings[i].decode():
+        if ']' in settings[i].decode():
             installed_apps_end = i
             break
     swampdragon = '    \'swampdragon\',\n'.encode('utf-8')
