@@ -1,5 +1,5 @@
-from django.db.models.fields.related import ReverseSingleRelatedObjectDescriptor, SingleRelatedObjectDescriptor, \
-    ForeignRelatedObjectsDescriptor, ManyRelatedObjectsDescriptor, ReverseManyRelatedObjectsDescriptor
+from django.db.models.fields.related import ForwardManyToOneDescriptor, ReverseOneToOneDescriptor, \
+    ReverseManyToOneDescriptor, ManyToManyDescriptor
 
 
 def _construct_graph(parent_type, child_type, via, is_collection, property_name):
@@ -38,11 +38,11 @@ def get_object_map(serializer, ignore_serializer_pairs=None):
             continue
 
         field_type = getattr(serializer_instance.opts.model, field_name)
-        is_fk = isinstance(field_type, ReverseSingleRelatedObjectDescriptor)
-        is_o2o = isinstance(field_type, SingleRelatedObjectDescriptor)
-        is_reverse_fk = isinstance(field_type, ForeignRelatedObjectsDescriptor)
-        is_m2m = isinstance(field_type, ManyRelatedObjectsDescriptor)
-        is_reverse_m2m = isinstance(field_type, ReverseManyRelatedObjectsDescriptor)
+        is_fk = isinstance(field_type, ForwardManyToOneDescriptor)
+        is_o2o = isinstance(field_type, ReverseOneToOneDescriptor)
+        is_reverse_fk = isinstance(field_type, ReverseManyToOneDescriptor)
+        is_m2m = isinstance(field_type, ManyToManyDescriptor)
+        is_reverse_m2m = isinstance(field_type, ManyToManyDescriptor)
 
         if is_fk:
             # Django 1.8:
