@@ -1,4 +1,4 @@
-from django.db.models.fields.related import ReverseSingleRelatedObjectDescriptor, SingleRelatedObjectDescriptor, \
+from django.db.models.fields.related import ForwardManyToOneDescriptor, SingleRelatedObjectDescriptor, \
     ForeignRelatedObjectsDescriptor, ManyRelatedObjectsDescriptor, ReverseManyRelatedObjectsDescriptor
 
 
@@ -38,7 +38,7 @@ def get_object_map(serializer, ignore_serializer_pairs=None):
             continue
 
         field_type = getattr(serializer_instance.opts.model, field_name)
-        is_fk = isinstance(field_type, ReverseSingleRelatedObjectDescriptor)
+        is_fk = isinstance(field_type, ForwardManyToOneDescriptor)
         is_o2o = isinstance(field_type, SingleRelatedObjectDescriptor)
         is_reverse_fk = isinstance(field_type, ForeignRelatedObjectsDescriptor)
         is_m2m = isinstance(field_type, ManyRelatedObjectsDescriptor)
