@@ -1,6 +1,6 @@
 from collections import namedtuple
 from django.db.models.fields.related import ForeignKey, ForwardManyToOneDescriptor, \
-    ManyToManyDescriptor, ForeignRelatedObjectsDescriptor, \
+    ManyToManyDescriptor, ReverseManyToOneDescriptor, \
     SingleRelatedObjectDescriptor
 # from django.db.models.related import RelatedObject
 from django.db.models.fields.related import ForeignObjectRel
@@ -75,7 +75,7 @@ def get_id_mappings(serializer):
         field_type = getattr(serializer.opts.model, field_name)
         is_fk = isinstance(field_type, ForwardManyToOneDescriptor)
         is_o2o = isinstance(field_type, SingleRelatedObjectDescriptor)
-        is_reverse_fk = isinstance(field_type, ForeignRelatedObjectsDescriptor)
+        is_reverse_fk = isinstance(field_type, ReverseManyToOneDescriptor)
         is_m2m = isinstance(field_type, ManyToManyDescriptor)
         is_reverse_m2m = isinstance(field_type, ManyToManyDescriptor)
 
