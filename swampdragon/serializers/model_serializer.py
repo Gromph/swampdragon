@@ -135,7 +135,9 @@ class ModelSerializer(Serializer):
         if deserializer:
             deserializer(self.instance, key, val)
         else:
-            setattr(self.instance, key, val)
+            if hasattr(field.rel, 'to') and hasattr(self.instance, '%s_id' % key):
+                key = '%s_id' % key
+        setattr(self.instance, key, val)
 
     def _deserialize_related(self, key, val, save_instance=False):
         serializer = self._get_related_serializer(key)
