@@ -1,3 +1,5 @@
+import traceback
+
 from .pubsub_providers.publisher_factory import get_publisher
 from .paginator import Paginator
 from .pubsub_providers.base_provider import PUBACTIONS
@@ -62,7 +64,10 @@ class BaseRouter(object):
                     if not permission.test_permission(self, verb, **kwargs):
                         permission.permission_failed(self)
                         return
-            m(**kwargs)
+            try:
+                m(**kwargs)
+            except Exception as ex:
+                print(traceback.format_exc())
         else:
             if verb not in self.exclude_verbs:
                 raise UnexpectedVerbException('\n------\nUnexpected verb: {}\n------'.format(verb))
