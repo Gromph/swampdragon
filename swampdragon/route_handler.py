@@ -64,8 +64,10 @@ class BaseRouter(object):
                     if not permission.test_permission(self, verb, **kwargs):
                         permission.permission_failed(self)
                         return
-
-            m(**kwargs)
+            try:
+                m(**kwargs)
+            except Exception:
+                print(traceback.format_exc())
         else:
             if verb not in self.exclude_verbs:
                 raise UnexpectedVerbException('\n------\nUnexpected verb: {}\n------'.format(verb))
