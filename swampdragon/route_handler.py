@@ -66,8 +66,9 @@ class BaseRouter(object):
                         return
             try:
                 m(**kwargs)
-            except Exception:
+            except Exception as e:
                 print(traceback.format_exc())
+                self.send_error("A fatal error has occured. {}".format(e.message))
         else:
             if verb not in self.exclude_verbs:
                 raise UnexpectedVerbException('\n------\nUnexpected verb: {}\n------'.format(verb))
