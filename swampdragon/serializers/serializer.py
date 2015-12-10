@@ -14,7 +14,7 @@ class SerializerMeta(object):
 
 
 class Serializer(object):
-    def __init__(self, data=None, initial=None):
+    def __init__(self, data=None, initial=None, connection=None):
         if data and not isinstance(data, dict):
             raise Exception('data needs to be a dictionary')
         self.opts = SerializerMeta(self.Meta)
@@ -22,6 +22,7 @@ class Serializer(object):
         self.clean_data = {}
         self.initial = initial or {}
         self.errors = {}
+        self.connection = connection
 
     def save(self):
         self.deserialize()
