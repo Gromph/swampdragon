@@ -197,7 +197,7 @@ class BaseModelRouter(BaseRouter):
         return dict(kwargs)
 
     def send_list(self, object_list, **kwargs):
-        self.send([self.serializer_class(instance=o).serialize() for o in object_list], **kwargs)
+        self.send([self.serializer_class(instance=o, connection=self.connection).serialize() for o in object_list], **kwargs)
 
     def get_single(self, **kwargs):
         obj = self._get_object(**kwargs)
@@ -205,7 +205,7 @@ class BaseModelRouter(BaseRouter):
         return obj
 
     def send_single(self, obj, **kwargs):
-        self.serializer = self.serializer_class(instance=obj)
+        self.serializer = self.serializer_class(instance=obj, connection=self.connection)
         self.send(self.serializer.serialize(), **kwargs)
 
     def on_error(self, errors):
@@ -213,7 +213,7 @@ class BaseModelRouter(BaseRouter):
 
     def create(self, **kwargs):
         initial = self.get_initial('create', **kwargs)
-        self.serializer = self.serializer_class(data=kwargs, initial=initial)
+        self.serializer = self.serializer_class(data=kwargs, initial=initial, connection=self.connection)
         try:
             obj = self.serializer.save()
         except ModelValidationError as error:
@@ -229,7 +229,7 @@ class BaseModelRouter(BaseRouter):
     def update(self, **kwargs):
         initial = self.get_initial('update', **kwargs)
         obj = self._get_object(**kwargs)
-        self.serializer = self.serializer_class(instance=obj, data=kwargs, initial=initial)
+        self.serializer = self.serializer_class(instance=obj, data=kwargs, initial=initial, connection=self.connection)
         past_state = self.serializer.serialize()
         try:
             self.serializer.save()
@@ -247,7 +247,7 @@ class BaseModelRouter(BaseRouter):
 
     def delete(self, **kwargs):
         obj = self._get_object(**kwargs)
-        self.serializer = self.serializer_class(instance=obj, data=kwargs)
+        self.serializer = self.serializer_class(instance=obj, data=kwargs, connection=self.connection)
         obj_id = obj.pk
         self.deleted(obj, obj_id, **kwargs)
         obj.delete()
@@ -289,7 +289,7 @@ class BaseModelPublisherRouter(BaseModelRouter):
         base_channel = self.serializer_class.get_base_channel()
         all_model_channels = publisher.get_channels(base_channel)
         channels = filter_channels_by_model(all_model_channels, obj)
-        self.publish_action(channels, self.serializer_class(instance=obj).serialize(), PUBACTIONS.created)
+        self.publish_action(channels, self.serializer_class(instance=obj, connection=self.connection).serialize(), PUBACTIONS.created)
 
     def updated(self, obj, **kwargs):
         super(BaseModelPublisherRouter, self).updated(obj, **kwargs)
