@@ -136,7 +136,8 @@ class ModelSerializer(Serializer):
         if deserializer:
             deserializer(self.instance, key, val)
         else:
-            if hasattr(field.rel, 'to') and isinstance(val, int) and hasattr(self.instance, '%s_id' % key):
+            if hasattr(field.rel, 'to') and not isinstance(val, field.rel.model) and \
+                    hasattr(self.instance, '%s_id' % key):
                 key = '%s_id' % key
         setattr(self.instance, key, val)
 
