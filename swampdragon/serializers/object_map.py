@@ -90,11 +90,11 @@ def get_object_map(serializer, ignore_serializer_pairs=None):
 
         if is_reverse_fk:
             # Django 1.9:
-            if hasattr('rel', field_type) and hasattr(field_type.rel, 'model'):
+            if hasattr(str('rel'), field_type) and hasattr(field_type.rel, 'model'):
                 model = field_type.rel.model
             # Django 1.8:
             # the related.model is related.related_model in Django 1.8
-            elif hasattr('related', field_type) and hasattr(field_type.related, 'related_model'):
+            elif hasattr(str('related'), field_type) and hasattr(field_type.related, 'related_model'):
                 model = field_type.related.related_model
             else:
                 model = field_type.related.model
