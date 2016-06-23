@@ -1,8 +1,5 @@
 from django.core.exceptions import ValidationError
-<<<<<<< HEAD
-from django.db.models.fields.related import ForwardManyToOneDescriptor, ReverseManyToOneDescriptor, \
-    ManyToManyDescriptor
-=======
+
 try:
     # bis 1.8.x
     from django.db.models.fields.related import ReverseSingleRelatedObjectDescriptor
@@ -18,8 +15,7 @@ except:
     from django.db.models.fields.related import ReverseManyToOneDescriptor
     from django.db.models.fields.related import ReverseOneToOneDescriptor
     pre19syntax = False
- 
->>>>>>> master
+
 from swampdragon.model_tools import get_property, get_model
 from swampdragon.serializers.field_serializers import serialize_field
 from swampdragon.serializers.object_map import get_object_map
@@ -156,17 +152,10 @@ class ModelSerializer(Serializer):
         if deserializer:
             deserializer(self.instance, key, val)
         else:
-<<<<<<< HEAD
-            if hasattr(field.rel, 'to') and not isinstance(val, field.rel.model) and \
-                    hasattr(self.instance, '%s_id' % key):
-                key = '%s_id' % key
-        setattr(self.instance, key, val)
-=======
             if hasattr(field.rel, 'to') and hasattr(self.instance, '%s_id' % key):
                 key = '%s_id' % key
 
             setattr(self.instance, key, val)
->>>>>>> master
 
     def _deserialize_related(self, key, val, save_instance=False):
         serializer = self._get_related_serializer(key)
@@ -238,21 +227,6 @@ class ModelSerializer(Serializer):
         elif hasattr(self.opts.model, attr_name):
             # Check if the field is a relation of any kind
             field_type = getattr(self.opts.model, attr_name)
-<<<<<<< HEAD
-            # Reverse FK
-            if isinstance(field_type, ForwardManyToOneDescriptor):
-                rel = get_property(self.instance, attr_name)
-                if rel:
-                    val = rel.pk
-            # FK
-            elif isinstance(field_type, ReverseManyToOneDescriptor):
-                val = list(get_property(self.instance, attr_name).all().values_list('pk', flat=True))
-            elif isinstance(field_type, ManyToManyDescriptor):
-                val = list(get_property(self.instance, attr_name).all().values_list('pk', flat=True))
-            elif isinstance(field_type, ManyToManyDescriptor):
-                val = list(get_property(self.instance, attr_name).all().values_list('pk', flat=True))
-
-=======
             if pre19syntax:
                 # Reverse FK
                 if isinstance(field_type, ReverseSingleRelatedObjectDescriptor):
@@ -277,7 +251,6 @@ class ModelSerializer(Serializer):
                     al = list(get_property(self.instance, attr_name).all().values_list('pk', flat=True))
                 elif isinstance(field_type, ManyToManyDescriptor) and not field_type.reverse:
                     val = list(get_property(self.instance, attr_name).all().values_list('pk', flat=True))
->>>>>>> master
         # Serialize the field
         return serialize_field(val)
 

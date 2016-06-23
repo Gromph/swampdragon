@@ -1,9 +1,4 @@
 from collections import namedtuple
-<<<<<<< HEAD
-from django.db.models.fields.related import ForeignKey, ForwardManyToOneDescriptor, \
-    ManyToManyDescriptor, ReverseManyToOneDescriptor, \
-    ReverseOneToOneDescriptor
-=======
 from django.db.models.fields.related import ForeignKey
 try:
     # bis 1.8.x
@@ -21,7 +16,6 @@ except:
     from django.db.models.fields.related import ReverseOneToOneDescriptor
     pre19syntax = False
 
->>>>>>> master
 # from django.db.models.related import RelatedObject
 from django.db.models.fields.related import ForeignObjectRel
 from django.db.models.fields.related import ManyToManyField
@@ -93,13 +87,6 @@ def get_id_mappings(serializer):
             continue
 
         field_type = getattr(serializer.opts.model, field_name)
-<<<<<<< HEAD
-        is_fk = isinstance(field_type, ForwardManyToOneDescriptor)
-        is_o2o = isinstance(field_type, ReverseOneToOneDescriptor)
-        is_reverse_fk = isinstance(field_type, ReverseManyToOneDescriptor)
-        is_m2m = isinstance(field_type, ManyToManyDescriptor)
-        is_reverse_m2m = isinstance(field_type, ManyToManyDescriptor)
-=======
         if pre19syntax:
             is_fk = isinstance(field_type, ReverseSingleRelatedObjectDescriptor)
             is_o2o = isinstance(field_type, SingleRelatedObjectDescriptor)
@@ -112,7 +99,6 @@ def get_id_mappings(serializer):
             is_reverse_fk = isinstance(field_type, ReverseManyToOneDescriptor)
             is_m2m = isinstance(field_type, ManyToManyDescriptor) and not field_type.reverse
             is_reverse_m2m = isinstance(field_type, ManyToManyDescriptor) and field_type.reverse
->>>>>>> master
 
         try:
             val = getattr(serializer.instance, field_name)
