@@ -92,14 +92,16 @@ def get_object_map(serializer, ignore_serializer_pairs=None):
             # Django 1.9:
             if hasattr(field_type, 'rel') and hasattr(field_type.rel, 'model'):
                 model = field_type.rel.model
-            # Django 1.8:
-            # the related.model is related.related_model in Django 1.8
-            elif hasattr(field_type, 'related') and hasattr(field_type.related, 'related_model'):
-                model = field_type.related.related_model
+                attname = field_type.rel.field.name
             else:
-                model = field_type.related.model
+                # Django 1.8:
+                # the related.model is related.related_model in Django 1.8
+                if hasattr(field_type, 'related') and hasattr(field_type.related, 'related_model'):
+                    model = field_type.related.related_model
+                else:
+                    model = field_type.related.model
+                attname = field_type.related.field.name
             is_collection = True
-            attname = field_type.related.field.name
 
         if is_m2m:
             # Django 1.8:
