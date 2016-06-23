@@ -1,5 +1,10 @@
+import logging
+
 from ..serializers.serializer_tools import get_serializer_relationship_field
 from .channel_utils import make_safe, get_property_and_value_from_channel, properties_match_channel_by_object, properties_match_channel_by_dict
+
+
+logger = logging.getLogger(__name__)
 
 
 def _construct_channel(base_channel, **channel_filter):
@@ -71,6 +76,16 @@ def has_related_values(obj, properties):
             property_name, filter_name = field.split('__', 1)
         attr = getattr(obj, property_name)
         if hasattr(attr, 'all'):
-            if not getattr(obj, property_name).filter(**{filter_name: channel_val}).exists():
+            try:
+                if not getattr(obj, property_name).filter(**{filter_name: channel_val}).exists():
+                    return False
+            except ValueError:
+                logger.error('There is a filter error.', exc_info=True, extra={
+                    'obj': obj,
+                    'properties': properties,
+                    'property_name': property_name,
+                    'filter_name': filter_name,
+                    'channel_val': channel_val
+                })
                 return False
     return True

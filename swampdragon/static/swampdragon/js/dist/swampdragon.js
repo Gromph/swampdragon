@@ -354,7 +354,11 @@ swampdragon.callRouter = function (verb, route, args, success, failure, channel)
         }
         if (context.state == 'login_required') {
             if (failure) { failure(context, ['login_required'])}
+<<<<<<< HEAD
         }
+=======
+        }        
+>>>>>>> master
     });
 
     swampdragon.sendJSON({

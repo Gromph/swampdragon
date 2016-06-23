@@ -41,7 +41,7 @@ class BasePaginator(object):
             if number == 1 and self.allow_empty_first_page:
                 pass
             else:
-                raise EmptyPage('That page contains no results')
+                print('That page number {} contains no results'.format(number))
         return number
 
     def page(self, number):

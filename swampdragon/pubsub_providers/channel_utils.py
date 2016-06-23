@@ -1,12 +1,16 @@
+import logging
+
 from django.conf import settings
 from ..model_tools import string_to_list, get_property
 from .channel_filters import filter_options, in_compare, term_match_check
-
 
 try:
     from urllib.parse import quote_plus
 except ImportError:
     from urllib import quote_plus
+
+
+logger = logging.getLogger(__name__)
 
 
 def make_safe(val):
@@ -116,8 +120,27 @@ def has_related_value(obj, field, channel_val):
         property_name, filter_by_val = field.split('__', 1)
     attr = getattr(obj, property_name)
     if hasattr(attr, 'all'):
-        return getattr(obj, property_name).filter(**{filter_by_val: channel_val}).exists()
+        try:
+            return getattr(obj, property_name).filter(**{filter_by_val: channel_val}).exists()
+        except ValueError:
+            logger.error('There is a filter error.', exc_info=True, extra={
+                'obj': obj,
+                'field': field,
+                'property_name': property_name,
+                'filter_by_val': filter_by_val,
+                'channel_val': channel_val
+            })
+            return False
     else:
         filter_query = {'pk': obj.pk}
         filter_query[field] = channel_val
-        return obj.__class__.objects.filter(**filter_query).exists()
+        try:
+            return obj.__class__.objects.filter(**filter_query).exists()
+        except ValueError:
+            logger.error('There is a filter error.', exc_info=True, extra={
+                'obj': obj,
+                'field': field,
+                'channel_val': channel_val,
+                'filter_query': filter_query
+            })
+            return False
