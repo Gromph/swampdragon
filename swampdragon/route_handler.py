@@ -53,7 +53,10 @@ class BaseRouter(object):
 
     def handle(self, data):
         for middleware in self.loaded_middleware:
-            middleware.process_handle(data)
+            try:
+                middleware.process_handle(data)
+            except:
+                print(traceback.format_exc())
 
         verb = data['verb']
         kwargs = data.get('args') or {}
