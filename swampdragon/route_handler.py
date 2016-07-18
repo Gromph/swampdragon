@@ -34,10 +34,10 @@ class BaseRouter(object):
     serializer = None
     route_name = None
     permission_classes = []
-    middleware = []
+    loaded_middleware = []
 
     def __init__(self, connection, request=None, **kwargs):
-        self.middleware = [middleware() for middleware in middlewares]
+        self.loaded_middleware = [middleware() for middleware in middlewares]
         self.connection = connection
         self.context = dict()
 
@@ -52,7 +52,8 @@ class BaseRouter(object):
         return route_name
 
     def handle(self, data):
-        [middleware.process_handle(data) for middleware in self.middleware]
+        for middleware in self.loaded_middleware:
+            middleware.process_handle(data)
 
         verb = data['verb']
         kwargs = data.get('args') or {}
@@ -115,12 +116,16 @@ class BaseRouter(object):
 
         message = format_message(data=data, context=self.context, channel_setup=channel_setup)
         self.connection.send(message)
-        [middleware.process_send(data) for middleware in self.middleware]
+
+        for middleware in self.loaded_middleware:
+            middleware.process_send(data)
 
     def send_error(self, data, channel_setup=None):
         self.context['state'] = ERROR
         self.connection.send(format_message(data=data, context=self.context, channel_setup=channel_setup))
-        [middleware.process_send_error(data) for middleware in self.middleware]
+
+        for middleware in self.loaded_middleware:
+            middleware.process_send_error(data)
 
     def send_login_required(self, channel_setup=None):
         self.context['state'] = LOGIN_REQUIRED
