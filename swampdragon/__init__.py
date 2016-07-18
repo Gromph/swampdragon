@@ -64,7 +64,7 @@ def discover_middleware():
     if not hasattr(settings, 'SWAMPDRAGON_MIDDLEWARE_CLASSES'):
         return []
 
-    for middleware in settings.MIDDLEWARE_CLASSES:
+    for middleware in settings.SWAMPDRAGON_MIDDLEWARE_CLASSES:
         module_name, cls_name = middleware.rsplit('.', 1)
         module = import_module(module_name)
         middlewares.append(getattr(module, cls_name))
