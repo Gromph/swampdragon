@@ -1,5 +1,6 @@
 import traceback
 
+from . import middlewares
 from .pubsub_providers.publisher_factory import get_publisher
 from .paginator import Paginator
 from .pubsub_providers.base_provider import PUBACTIONS
@@ -33,8 +34,10 @@ class BaseRouter(object):
     serializer = None
     route_name = None
     permission_classes = []
+    middleware = []
 
     def __init__(self, connection, request=None, **kwargs):
+        self.middleware = [middleware() for middleware in middlewares]
         self.connection = connection
         self.context = dict()
 
@@ -49,6 +52,8 @@ class BaseRouter(object):
         return route_name
 
     def handle(self, data):
+        [middleware.process_handle(data) for middleware in self.middleware]
+
         verb = data['verb']
         kwargs = data.get('args') or {}
         client_callback_name = data.get('callbackname')
@@ -110,10 +115,12 @@ class BaseRouter(object):
 
         message = format_message(data=data, context=self.context, channel_setup=channel_setup)
         self.connection.send(message)
+        [middleware.process_send(data) for middleware in self.middleware]
 
     def send_error(self, data, channel_setup=None):
         self.context['state'] = ERROR
         self.connection.send(format_message(data=data, context=self.context, channel_setup=channel_setup))
+        [middleware.process_send_error(data) for middleware in self.middleware]
 
     def send_login_required(self, channel_setup=None):
         self.context['state'] = LOGIN_REQUIRED

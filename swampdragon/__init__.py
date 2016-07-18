@@ -1,6 +1,12 @@
 VERSION = (0, 4, 2, 2)
 
 
+try:
+    from importlib import import_module
+except ImportError:
+    from django.utils.importlib import import_module
+
+
 def discover_routes():
     from swampdragon import route_handler
     """
@@ -45,3 +51,22 @@ def load_field_deserializers():
             imported_deserializers.append(target_mod)
         except ImportError:
             pass
+
+
+middlewares = []
+
+
+def discover_middleware():
+    """
+    """
+    from django.conf import settings
+
+    if not hasattr(settings, 'SWAMPDRAGON_MIDDLEWARE_CLASSES'):
+        return []
+
+    for middleware in settings.MIDDLEWARE_CLASSES:
+        module_name, cls_name = middleware.rsplit('.')
+        module = import_module(module_name)
+        middlewares.append(getattr(module, cls_name))
+
+    return middlewares
