@@ -65,7 +65,7 @@ def discover_middleware():
         return []
 
     for middleware in settings.MIDDLEWARE_CLASSES:
-        module_name, cls_name = middleware.rsplit('.')
+        module_name, cls_name = middleware.rsplit('.', 1)
         module = import_module(module_name)
         middlewares.append(getattr(module, cls_name))
 
