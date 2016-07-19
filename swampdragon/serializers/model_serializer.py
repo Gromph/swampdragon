@@ -202,6 +202,8 @@ class ModelSerializer(Serializer):
 
         custom_serializer_functions = self._get_custom_field_serializers()
         for custom_function, name in custom_serializer_functions:
+            if name not in fields:
+                continue
             serializer = getattr(self, name, None)
             if serializer:
                 serializer = get_serializer(serializer, self)
