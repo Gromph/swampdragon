@@ -7,6 +7,9 @@ from ..sessions.sessions import get_session_store
 from ..same_origin import set_origin_connection, test_origin
 import json
 
+import logging
+
+logger = logging.getLogger(__name__)
 
 session_store = get_session_store()
 heartbeat_frequency = None
@@ -85,12 +88,14 @@ class SubscriberConnection(ConnectionMixin, SockJSConnection):
                 return
             handler = route_handler.get_route_handler(data['route'])
             handler(self).handle(data)
-        except Exception:
-            self.abort_connection()
-            raise
+        except Exception as e:
+            message = "{} -> serialiser: {}, model: {}, route: {}, verb: {}".format(
+                e, handler.serializer_class, handler.model, data['route'], data['verb']
+            )
+            logger.error(message)
 
-    def abort_connection(self):
-        self.close(code=3001, message='Connection aborted')
+    def abort_connection(self, message='Connection aborted'):
+        self.close(code=3001, message=message)
 
     def close(self, code=3000, message='Connection closed'):
         self.session.close(code, message)

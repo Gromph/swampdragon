@@ -55,12 +55,13 @@ class ModelSerializerMeta(object):
 
 
 class ModelSerializer(Serializer):
-    def __init__(self, data=None, instance=None, initial=None):
+    def __init__(self, data=None, instance=None, initial=None, connection=None):
         if data and not isinstance(data, dict):
             raise Exception('data needs to be a dictionary')
         self.opts = ModelSerializerMeta(self.Meta)
         self._instance = instance
         self._data = data
+        self.connection = connection
         self.initial = initial or {}
         self.base_fields = self._get_base_fields()
         self.m2m_fields = self._get_m2m_fields()

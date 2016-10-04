@@ -4,6 +4,7 @@ from .pubsub_providers.base_provider import PUBACTIONS
 from .message_format import format_message
 from .pubsub_providers.model_channel_builder import make_channels, filter_channels_by_model, filter_channels_by_dict
 from .serializers.validation import ModelValidationError
+import logging
 
 SUCCESS = 'success'
 ERROR = 'error'
@@ -15,6 +16,8 @@ CHANNEL_DATA_UNSUBSCRIBE = 'unsubscribe'
 registered_handlers = {}
 
 publisher = get_publisher()
+
+logger = logging.getLogger(__name__)
 
 
 class UnexpectedVerbException(Exception):
@@ -126,14 +129,18 @@ class BaseRouter(object):
         self.connection.pub_sub.subscribe(server_channels, self.connection)
 
     def unsubscribe(self, **kwargs):
-        client_channel = kwargs.pop('channel')
-        server_channels = self.get_subscription_channels(**kwargs)
-        self.send(
-            data='unsubscribed',
-            channel_setup=self.make_channel_data(client_channel, server_channels, CHANNEL_DATA_UNSUBSCRIBE),
-            **kwargs
-        )
-        self.connection.pub_sub.unsubscribe(server_channels, self.connection)
+        if 'channel' in kwargs:
+            client_channel = kwargs.pop('channel')
+            server_channels = self.get_subscription_channels(**kwargs)
+            self.send(
+                data='unsubscribed',
+                channel_setup=self.make_channel_data(client_channel, server_channels, CHANNEL_DATA_UNSUBSCRIBE),
+                **kwargs
+            )
+            self.connection.pub_sub.unsubscribe(server_channels, self.connection)
+        else:
+            message = 'BaseRouter.unsubscribe -> route_name: {}'.format(self.route_name)
+            logger.error(message)
 
     def publish(self, channels, publish_data):
         for channel in channels:
