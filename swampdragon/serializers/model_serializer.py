@@ -62,6 +62,7 @@ class ModelSerializer(Serializer):
         self.opts = ModelSerializerMeta(self.Meta)
         self._instance = instance
         self._data = data
+        self.connection = connection
         self.initial = initial or {}
         self.base_fields = self._get_base_fields()
         self.m2m_fields = self._get_m2m_fields()
