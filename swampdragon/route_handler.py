@@ -148,6 +148,12 @@ class BaseRouter(object):
         raise NotImplementedError()
 
     def subscribe(self, **kwargs):
+        if 'channel' not in kwargs:
+            logger.error('BaseRouter.subscribe has no channel.', exc_info=True, extra={
+                'kwargs': kwargs
+            })
+            return
+
         client_channel = kwargs.pop('channel')
         server_channels = self.get_subscription_channels(**kwargs)
         self.send(
@@ -157,19 +163,20 @@ class BaseRouter(object):
         self.connection.pub_sub.subscribe(server_channels, self.connection)
 
     def unsubscribe(self, **kwargs):
-        if 'channel' in kwargs:
-            client_channel = kwargs.pop('channel')
-            server_channels = self.get_subscription_channels(**kwargs)
-            self.send(
-                data='unsubscribed',
-                channel_setup=self.make_channel_data(client_channel, server_channels, CHANNEL_DATA_UNSUBSCRIBE),
-                **kwargs
-            )
-            self.connection.pub_sub.unsubscribe(server_channels, self.connection)
-        else:
-            logger.error('BaseRouter.unsubscribe', exc_info=True, extra={
+        if 'channel' not in kwargs:
+            logger.error('BaseRouter.unsubscribe has no channel.', exc_info=True, extra={
                 'kwargs': kwargs
             })
+            return
+
+        client_channel = kwargs.pop('channel')
+        server_channels = self.get_subscription_channels(**kwargs)
+        self.send(
+            data='unsubscribed',
+            channel_setup=self.make_channel_data(client_channel, server_channels, CHANNEL_DATA_UNSUBSCRIBE),
+            **kwargs
+        )
+        self.connection.pub_sub.unsubscribe(server_channels, self.connection)
 
     def publish(self, channels, publish_data):
         for channel in channels:
@@ -287,6 +294,12 @@ class BaseModelRouter(BaseRouter):
         self.send(serialized_obj, **kwargs)
 
     def subscribe(self, **kwargs):
+        if 'channel' not in kwargs:
+            logger.error('BaseModelRouter.subscribe has no channel.', exc_info=True, extra={
+                'kwargs': kwargs
+            })
+            return
+
         client_channel = kwargs.pop('channel')
         server_channels = make_channels(self.serializer_class, self.include_related, self.get_subscription_contexts(**kwargs))
         data = self.serializer_class.get_object_map(self.include_related)
@@ -299,6 +312,12 @@ class BaseModelRouter(BaseRouter):
         self.connection.pub_sub.subscribe(server_channels, self.connection)
 
     def unsubscribe(self, **kwargs):
+        if 'channel' not in kwargs:
+            logger.error('BaseModelRouter.unsubscribe has no channel.', exc_info=True, extra={
+                'kwargs': kwargs
+            })
+            return
+
         client_channel = kwargs.pop('channel')
         server_channels = make_channels(self.serializer_class, self.include_related, self.get_subscription_contexts(**kwargs))
         self.send(
