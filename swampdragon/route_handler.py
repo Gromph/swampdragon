@@ -1,6 +1,3 @@
-import traceback
-
-from . import middlewares
 from .pubsub_providers.publisher_factory import get_publisher
 from .paginator import Paginator
 from .pubsub_providers.base_provider import PUBACTIONS
@@ -40,7 +37,6 @@ class BaseRouter(object):
     loaded_middleware = []
 
     def __init__(self, connection, request=None, **kwargs):
-        self.loaded_middleware = [middleware() for middleware in middlewares]
         self.connection = connection
         self.context = dict()
 
@@ -55,9 +51,6 @@ class BaseRouter(object):
         return route_name
 
     def handle(self, data):
-        for middleware in self.loaded_middleware:
-            middleware.process_handle(data)
-
         verb = data['verb']
         kwargs = data.get('args') or {}
         client_callback_name = data.get('callbackname')
@@ -76,8 +69,10 @@ class BaseRouter(object):
             try:
                 m(**kwargs)
             except Exception as e:
-                print(traceback.format_exc())
                 self.send_error("A fatal error has occured. {}".format(e))
+                logger.error('Swampdragon fatal error occured in handle.', exc_info=True, extra={
+                    'data': data
+                })
         else:
             if verb not in self.exclude_verbs:
                 raise UnexpectedVerbException('\n------\nUnexpected verb: {}\n------'.format(verb))
@@ -118,21 +113,36 @@ class BaseRouter(object):
             self._update_client_context(client_context)
 
         message = format_message(data=data, context=self.context, channel_setup=channel_setup)
-        self.connection.send(message)
 
-        for middleware in self.loaded_middleware:
-            middleware.process_send(data)
+        try:
+            self.connection.send(message)
+        except Exception:
+            logger.error('Swampdragon fatal error occured in send.', exc_info=True, extra={
+                'data': data,
+                'channel_setup': channel_setup,
+                'kwargs': kwargs
+            })
 
     def send_error(self, data, channel_setup=None):
         self.context['state'] = ERROR
-        self.connection.send(format_message(data=data, context=self.context, channel_setup=channel_setup))
 
-        for middleware in self.loaded_middleware:
-            middleware.process_send_error(data)
+        try:
+            self.connection.send(format_message(data=data, context=self.context, channel_setup=channel_setup))
+        except Exception:
+            logger.error('Swampdragon fatal error occured in send_error.', exc_info=True, extra={
+                'data': data,
+                'channel_setup': channel_setup
+            })
 
     def send_login_required(self, channel_setup=None):
         self.context['state'] = LOGIN_REQUIRED
-        self.connection.send(format_message(data=None, context=self.context, channel_setup=channel_setup))
+
+        try:
+            self.connection.send(format_message(data=None, context=self.context, channel_setup=channel_setup))
+        except Exception:
+            logger.error('Swampdragon fatal error occured in send_login_required.', exc_info=True, extra={
+                'channel_setup': channel_setup
+            })
 
     def get_subscription_channels(self, **kwargs):
         raise NotImplementedError()
@@ -157,8 +167,9 @@ class BaseRouter(object):
             )
             self.connection.pub_sub.unsubscribe(server_channels, self.connection)
         else:
-            message = 'BaseRouter.unsubscribe -> route_name: {}'.format(self.route_name)
-            logger.error(message)
+            logger.error('BaseRouter.unsubscribe', exc_info=True, extra={
+                'kwargs': kwargs
+            })
 
     def publish(self, channels, publish_data):
         for channel in channels:

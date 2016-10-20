@@ -51,22 +51,3 @@ def load_field_deserializers():
             imported_deserializers.append(target_mod)
         except ImportError:
             pass
-
-
-middlewares = []
-
-
-def discover_middleware():
-    """
-    """
-    from django.conf import settings
-
-    if not hasattr(settings, 'SWAMPDRAGON_MIDDLEWARE_CLASSES'):
-        return []
-
-    for middleware in settings.SWAMPDRAGON_MIDDLEWARE_CLASSES:
-        module_name, cls_name = middleware.rsplit('.', 1)
-        module = import_module(module_name)
-        middlewares.append(getattr(module, cls_name))
-
-    return middlewares

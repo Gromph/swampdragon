@@ -6,7 +6,7 @@ except ImportError:
     from django.utils.importlib import import_module
 from tornado import web, ioloop
 from sockjs.tornado import SockJSRouter
-from swampdragon import discover_routes, load_field_deserializers, discover_middleware, VERSION
+from swampdragon import discover_routes, load_field_deserializers, VERSION
 from swampdragon.settings_provider import SettingsHandler
 
 
@@ -61,7 +61,6 @@ Update your settings and add SWAMP_DRAGON_CONNECTION.
     urls.append(('/settings.js$', SettingsHandler))
 
     load_field_deserializers()
-    discover_middleware()
 
     app = web.Application(urls, **app_settings)
     app.listen(PORT, address=HOST, no_keep_alive=False)

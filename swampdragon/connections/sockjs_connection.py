@@ -88,16 +88,18 @@ class SubscriberConnection(ConnectionMixin, SockJSConnection):
                 return
             handler = route_handler.get_route_handler(data['route'])
             handler(self).handle(data)
-        except Exception as e:
-            message = "{} -> serialiser: {}, model: {}, route: {}, verb: {}".format(
-                e, handler.serializer_class, handler.model, data['route'], data['verb']
-            )
-            logger.error(message)
+        except Exception:
+            logger.error('Error in on_message.', exc_info=True, extra={
+                'handler': handler,
+                'data': data
+            })
 
     def abort_connection(self, message='Connection aborted'):
+        logger.info('Aborting connection.')
         self.close(code=3001, message=message)
 
     def close(self, code=3000, message='Connection closed'):
+        logger.info('Closing connection.')
         self.session.close(code, message)
 
 
