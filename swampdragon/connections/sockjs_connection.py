@@ -67,9 +67,11 @@ class SubscriberConnection(ConnectionMixin, SockJSConnection):
             self.periodic_callback.start()
 
     def send_heartbeat(self):
+        logger.info('Sending swampdragon heartbeat.')
         self.send({'heartbeat': '1'})
 
     def on_heartbeat(self):
+        logger.info('Swampdragon heartbeat received.')
         self.session_store.refresh_all_keys()
 
     def on_close(self):
