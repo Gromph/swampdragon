@@ -295,7 +295,7 @@ class BaseModelRouter(BaseRouter):
 
     def subscribe(self, **kwargs):
         if 'channel' not in kwargs:
-            logger.error('BaseModelRouter.subscribe has no channel.', exc_info=True, extra={
+            logger.info('BaseModelRouter.subscribe has no channel.', exc_info=True, extra={
                 'kwargs': kwargs
             })
             return
@@ -313,7 +313,7 @@ class BaseModelRouter(BaseRouter):
 
     def unsubscribe(self, **kwargs):
         if 'channel' not in kwargs:
-            logger.error('BaseModelRouter.unsubscribe has no channel.', exc_info=True, extra={
+            logger.info('BaseModelRouter.unsubscribe has no channel.', extra={
                 'kwargs': kwargs
             })
             return
@@ -323,7 +323,8 @@ class BaseModelRouter(BaseRouter):
         self.send(
             data='unsubscribed',
             channel_setup=self.make_channel_data(client_channel, server_channels, CHANNEL_DATA_UNSUBSCRIBE),
-            **kwargs)
+            **kwargs
+        )
         self.connection.pub_sub.unsubscribe(server_channels, self.connection)
 
 
