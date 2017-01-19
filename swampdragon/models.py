@@ -59,7 +59,7 @@ class SelfPublishModel(object):
         return relevant_fields_copy
 
         # for field_name in relevant_fields:
-        #     field = self._meta.get_field_by_name(field_name)[0]
+        #     field = self._meta.get_field(field_name)
         #     if isinstance(field, ForeignKey):
         #         relevant_fields.remove(field_name)
         #
