@@ -22,7 +22,7 @@ setup(
         "Django>=1.6",
         "Tornado >= 3.2.2",
         "sockjs-tornado >= 1.0.0",
-        "tornado-redis == 4.3.0",
+        "tornado-redis == 2.4.18",
         "redis >= 2.8",
         "python-dateutil == 2.8.1"
     ],
