@@ -1,5 +1,5 @@
 # Code from Django (https://github.com/django/django/blob/master/django/core/paginator.py)
-import collections
+import collections.abc
 from math import ceil
 
 
@@ -99,7 +99,7 @@ class BasePaginator(object):
     page_range = property(_get_page_range)
 
 
-class BasePage(collections.Sequence):
+class BasePage(collections.abc.Sequence):
 
     def __init__(self, object_list, number, paginator):
         self.object_list = object_list
