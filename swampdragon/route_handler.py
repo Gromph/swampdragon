@@ -293,18 +293,21 @@ class BaseModelPublisherRouter(BaseModelRouter):
         updated_fields = kwargs.get('updated_fields')
         self.publish_action(channels, self.serializer.serialize(fields=updated_fields), PUBACTIONS.updated)
         past_state = kwargs.get('past_state')
-        if past_state:
-            previous_channels = filter_channels_by_dict(all_model_channels, past_state)
-            delete_from_channels = set(previous_channels) - set(channels)
-            self.publish_action(delete_from_channels, past_state, PUBACTIONS.deleted)
 
-    def deleted(self, obj, obj_id, **kwargs):
-        super(BaseModelPublisherRouter, self).deleted(obj, obj_id, **kwargs)
-        base_channel = self.serializer_class.get_base_channel()
-        all_model_channels = publisher.get_channels(base_channel)
-        channels = filter_channels_by_model(all_model_channels, obj)
-        data = self.serializer.serialize()
-        self.publish_action(channels, data, PUBACTIONS.deleted)
+        # Disabled because swampdragon will send thousands of delete messages for the same model instance -Dan 2/14/2023
+        #if past_state:
+        #    previous_channels = filter_channels_by_dict(all_model_channels, past_state)
+        #    delete_from_channels = set(previous_channels) - set(channels)
+        #    self.publish_action(delete_from_channels, past_state, PUBACTIONS.deleted)
+
+    # Disabled because swampdragon will send thousands of delete messages for the same model instance -Dan 2/14/2023
+    #def deleted(self, obj, obj_id, **kwargs):
+    #    super(BaseModelPublisherRouter, self).deleted(obj, obj_id, **kwargs)
+    #    base_channel = self.serializer_class.get_base_channel()
+    #    all_model_channels = publisher.get_channels(base_channel)
+    #    channels = filter_channels_by_model(all_model_channels, obj)
+    #    data = self.serializer.serialize()
+    #    self.publish_action(channels, data, PUBACTIONS.deleted)
 
 
 class ModelRouter(BaseModelRouter):

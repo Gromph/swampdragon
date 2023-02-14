@@ -103,7 +103,10 @@ def _self_publish_model_m2m_change(sender, instance, action, model, pk_set, **kw
         instance._publish(instance.action, instance._serializer.opts.publish_fields)
 
 
-@receiver(pre_delete)
-def _self_publish_model_delete(sender, instance, **kwargs):
-    if isinstance(instance, SelfPublishModel):
-        instance._publish(PUBACTIONS.deleted)
+# Disabled because swampdragon will send thousands of delete messages for the same model instance
+# I think this was the cause of cpu usage creeping up to 100% on the server
+# -Dan 2/14/2023
+#@receiver(pre_delete)
+#def _self_publish_model_delete(sender, instance, **kwargs):
+#    if isinstance(instance, SelfPublishModel):
+#        instance._publish(PUBACTIONS.deleted)
