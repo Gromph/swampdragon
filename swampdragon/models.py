@@ -13,16 +13,31 @@ class SelfPublishModel(object):
     def __init__(self, *args, **kwargs):
         if isinstance(self.serializer_class, str):
             self.serializer_class = get_serializer(self.serializer_class, self)
+
+        # Optionally disable swampdragon for this model instance by passing in swampdragon=false to create
+        # ie: TournamentMatch.objects.create(swampdragon=False, ...
+        self._swampdragon = True
+        if "swampdragon" in kwargs:
+            self._swampdragon = kwargs.pop("swampdragon")
+
         self._pre_save_state = dict()
         super(SelfPublishModel, self).__init__(*args, **kwargs)
-        self._serializer = self.serializer_class(instance=self)
-        self._set_pre_save_state()
+
+        if self._swampdragon:
+            self._serializer = self.serializer_class(instance=self)
+            self._set_pre_save_state()
+
+    def disable_swampdragon(self):
+        # Used to disable swampdragon after model is loaded
+        self._swampdragon = False
 
     def _set_pre_save_state(self):
         """
         Set the state of the model before any changes are done,
         so it's possible to determine what fields have changed.
         """
+        if not self._swampdragon:
+            return
         relevant_fields = self._get_relevant_fields()
         for field in relevant_fields:
             val = get_property(self, field)
@@ -39,6 +54,8 @@ class SelfPublishModel(object):
         This is used to save the state of the model before it's updated,
         to be able to get changes used when publishing an update (so not all fields are published)
         """
+        if not self._swampdragon:
+            return []
         relevant_fields = self._serializer.base_fields
 
         if 'id' in relevant_fields:
@@ -66,6 +83,8 @@ class SelfPublishModel(object):
         # return relevant_fields
 
     def get_changed_fields(self):
+        if not self._swampdragon:
+            return []
         changed_fields = []
         for k, v in self._pre_save_state.items():
             val = get_property(self, k)
@@ -74,10 +93,13 @@ class SelfPublishModel(object):
         return changed_fields
 
     def serialize(self):
+        if not self._swampdragon:
+            return None
         return self._serializer.serialize()
 
     def _publish(self, action, changed_fields=None):
-        publish_model(self, self._serializer, action, changed_fields)
+        if self._swampdragon:
+            publish_model(self, self._serializer, action, changed_fields)
 
     def save(self, *args, **kwargs):
         if not self.pk:
@@ -103,10 +125,7 @@ def _self_publish_model_m2m_change(sender, instance, action, model, pk_set, **kw
         instance._publish(instance.action, instance._serializer.opts.publish_fields)
 
 
-# Disabled because swampdragon will send thousands of delete messages for the same model instance
-# I think this was the cause of cpu usage creeping up to 100% on the server
-# -Dan 2/14/2023
-#@receiver(pre_delete)
-#def _self_publish_model_delete(sender, instance, **kwargs):
-#    if isinstance(instance, SelfPublishModel):
-#        instance._publish(PUBACTIONS.deleted)
+@receiver(pre_delete)
+def _self_publish_model_delete(sender, instance, **kwargs):
+    if isinstance(instance, SelfPublishModel):
+        instance._publish(PUBACTIONS.deleted)
